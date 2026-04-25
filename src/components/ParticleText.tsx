@@ -170,10 +170,16 @@ export const ParticleText = memo(function ParticleText({ text }: ParticleTextPro
 
     const compactMode = size.width < 900 || size.height < 560;
     const safeText = text.slice(0, 16).trim() || DEFAULT_WORD;
-    const fontSize = clamp(
+    const minFontSize = compactMode ? 28 : 92;
+    const maxFontSize = compactMode ? 180 : 300;
+    const horizontalPadding = compactMode ? size.width * 0.12 : size.width * 0.08;
+    const verticalPadding = compactMode ? size.height * 0.22 : size.height * 0.18;
+    const availableTextWidth = Math.max(size.width - horizontalPadding * 2, 1);
+    const availableTextHeight = Math.max(size.height - verticalPadding * 2, 1);
+    let fontSize = clamp(
       Math.min((size.width * 1.52) / Math.max(safeText.length, 1), size.height * 0.42),
-      compactMode ? 70 : 92,
-      compactMode ? 210 : 300,
+      minFontSize,
+      maxFontSize,
     );
 
     context.clearRect(0, 0, size.width, size.height);
@@ -181,6 +187,21 @@ export const ParticleText = memo(function ParticleText({ text }: ParticleTextPro
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     context.font = `800 ${fontSize}px "Segoe UI", Helvetica, Arial, sans-serif`;
+
+    const measuredText = context.measureText(safeText);
+    const measuredHeight =
+      measuredText.actualBoundingBoxAscent + measuredText.actualBoundingBoxDescent || fontSize;
+    const fitScale = Math.min(
+      availableTextWidth / Math.max(measuredText.width, 1),
+      availableTextHeight / Math.max(measuredHeight, 1),
+      1,
+    );
+
+    if (fitScale < 1) {
+      fontSize = Math.max(minFontSize, Math.floor(fontSize * fitScale));
+      context.font = `800 ${fontSize}px "Segoe UI", Helvetica, Arial, sans-serif`;
+    }
+
     context.fillText(safeText, size.width / 2, size.height / 2);
 
     // Leitura dos pixels do texto para descobrir onde as particulas devem existir.
