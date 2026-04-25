@@ -27,6 +27,10 @@ type PointerState = {
   active: boolean;
 };
 
+type ParticleLayout = Size & {
+  text: string;
+};
+
 const DEFAULT_WORD = 'REACT';
 const MAX_PIXEL_RATIO = 1.25;
 const DESKTOP_PARTICLE_BUDGET = 1400;
@@ -49,6 +53,7 @@ export const ParticleText = memo(function ParticleText({ text }: ParticleTextPro
   const offscreenRef = useRef<HTMLCanvasElement | null>(null);
   const spriteRef = useRef<HTMLCanvasElement | null>(null);
   const particlesRef = useRef<Particle[]>([]);
+  const lastLayoutRef = useRef<ParticleLayout | null>(null);
   const pointerRef = useRef<PointerState>({
     x: -9999,
     y: -9999,
@@ -226,7 +231,12 @@ export const ParticleText = memo(function ParticleText({ text }: ParticleTextPro
 
     const particleBudget = compactMode ? MOBILE_PARTICLE_BUDGET : DESKTOP_PARTICLE_BUDGET;
     const stride = Math.max(1, Math.ceil(sampledPoints.length / particleBudget));
-    const previousParticles = particlesRef.current;
+    const previousLayout = lastLayoutRef.current;
+    const canReuseParticles =
+      previousLayout?.text !== safeText &&
+      previousLayout?.width === size.width &&
+      previousLayout?.height === size.height;
+    const previousParticles = canReuseParticles ? particlesRef.current : [];
     const nextParticles: Particle[] = [];
 
     // Na troca de palavra, reaproveitamos as posicoes antigas para suavizar a reorganizacao.
@@ -235,13 +245,11 @@ export const ParticleText = memo(function ParticleText({ text }: ParticleTextPro
       const previous = previousParticles.length
         ? previousParticles[index % previousParticles.length]
         : undefined;
-      const orbit = (index / Math.max(sampledPoints.length, 1)) * TAU;
-      const launchRadius = compactMode ? 12 : 18;
       const sizeValue = compactMode ? 1.55 + Math.random() * 0.45 : 1.8 + Math.random() * 0.65;
 
       nextParticles.push({
-        x: previous?.x ?? size.width / 2 + Math.cos(orbit) * launchRadius,
-        y: previous?.y ?? size.height / 2 + Math.sin(orbit) * launchRadius,
+        x: previous?.x ?? point.x,
+        y: previous?.y ?? point.y,
         baseX: point.x,
         baseY: point.y,
         vx: previous?.vx ?? 0,
@@ -251,6 +259,11 @@ export const ParticleText = memo(function ParticleText({ text }: ParticleTextPro
     }
 
     particlesRef.current = nextParticles;
+    lastLayoutRef.current = {
+      width: size.width,
+      height: size.height,
+      text: safeText,
+    };
     startAnimation();
   }, [size, text]);
 
