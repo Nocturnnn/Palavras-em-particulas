@@ -170,14 +170,17 @@ export const ParticleText = memo(function ParticleText({ text }: ParticleTextPro
 
     const compactMode = size.width < 900 || size.height < 560;
     const safeText = text.slice(0, 16).trim() || DEFAULT_WORD;
-    const minFontSize = compactMode ? 28 : 92;
-    const maxFontSize = compactMode ? 180 : 300;
-    const horizontalPadding = compactMode ? size.width * 0.12 : size.width * 0.08;
-    const verticalPadding = compactMode ? size.height * 0.22 : size.height * 0.18;
+    const minFontSize = compactMode ? 22 : 92;
+    const maxFontSize = compactMode ? 138 : 300;
+    const horizontalPadding = compactMode ? size.width * 0.2 : size.width * 0.08;
+    const verticalPadding = compactMode ? size.height * 0.28 : size.height * 0.18;
     const availableTextWidth = Math.max(size.width - horizontalPadding * 2, 1);
     const availableTextHeight = Math.max(size.height - verticalPadding * 2, 1);
     let fontSize = clamp(
-      Math.min((size.width * 1.52) / Math.max(safeText.length, 1), size.height * 0.42),
+      Math.min(
+        ((compactMode ? size.width * 1.08 : size.width * 1.52) / Math.max(safeText.length, 1)),
+        size.height * (compactMode ? 0.3 : 0.42),
+      ),
       minFontSize,
       maxFontSize,
     );
