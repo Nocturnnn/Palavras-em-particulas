@@ -57,6 +57,7 @@ export const ParticleText = memo(function ParticleText({ text }: ParticleTextPro
   });
   const animationFrameRef = useRef(0);
   const stepRef = useRef<((time: number) => void) | null>(null);
+  const activePointerIdRef = useRef<number | null>(null);
   const [size, setSize] = useState<Size>({ width: 0, height: 0 });
 
   const startAnimation = () => {
@@ -321,11 +322,21 @@ export const ParticleText = memo(function ParticleText({ text }: ParticleTextPro
 
   const deactivatePointer = () => {
     pointerRef.current.active = false;
+    activePointerIdRef.current = null;
     startAnimation();
   };
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+    activePointerIdRef.current = event.pointerId;
     event.currentTarget.setPointerCapture(event.pointerId);
+    updatePointer(event);
+  };
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+    if (event.pointerType !== 'mouse' && activePointerIdRef.current !== event.pointerId) {
+      return;
+    }
+
     updatePointer(event);
   };
 
@@ -344,7 +355,7 @@ export const ParticleText = memo(function ParticleText({ text }: ParticleTextPro
         className="particle-canvas"
         aria-label={`Texto ${text} desenhado com particulas interativas`}
         onPointerDown={handlePointerDown}
-        onPointerMove={updatePointer}
+        onPointerMove={handlePointerMove}
         onPointerLeave={deactivatePointer}
         onPointerUp={handlePointerUpOrCancel}
         onPointerCancel={handlePointerUpOrCancel}

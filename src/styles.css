@@ -23,6 +23,7 @@ body,
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100svh;
   background:
     radial-gradient(circle at 50% 20%, rgba(79, 162, 255, 0.14), transparent 28%),
     linear-gradient(180deg, #040713 0%, #050816 100%);
@@ -38,8 +39,10 @@ select {
 
 .app-shell {
   min-height: 100vh;
+  min-height: 100svh;
   padding: 14px;
   display: grid;
+  grid-template-rows: auto 1fr;
   gap: 14px;
 }
 
@@ -78,12 +81,13 @@ select {
 
 .canvas-shell {
   width: 100%;
-  min-height: calc(100vh - 86px);
+  min-height: 0;
 }
 
 .particle-stage {
   width: 100%;
-  min-height: calc(100vh - 86px);
+  height: 100%;
+  min-height: 420px;
   border: 1px solid rgba(123, 177, 255, 0.14);
   border-radius: 24px;
   background:
@@ -118,9 +122,8 @@ select {
     gap: 10px;
   }
 
-  .canvas-shell,
   .particle-stage {
-    min-height: calc(100vh - 78px);
+    min-height: 360px;
     border-radius: 18px;
   }
 
